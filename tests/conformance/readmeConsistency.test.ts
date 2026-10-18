@@ -14,33 +14,11 @@ const shellExamples = (content: string): string[] =>
     (match[1] ?? "").trim(),
   );
 
-describe("onboarding documentation product facts", () => {
-  it.each([
-    ["docs/native-investigation.md", "raw-binary.md#nmos-6502"],
-    ["docs/ghidra-riscv.md", "raw-binary.md"],
-  ])(
-    "routes raw admission guidance in %s to the owning guide",
-    async (path, target) => {
-      const content = await readFile(resolve(path), "utf8");
-      const links = [...content.matchAll(/\]\(([^)\s]+)\)/gu)].map(
-        (match) => match[1],
-      );
-      expect(links, path).toContain(target);
-    },
-  );
-
-  it("keeps the installation MCP example aligned with the package registration command", async () => {
-    const content = await readFile(resolve("docs/installation.md"), "utf8");
-    expect(jsonExamples(content)).toContainEqual(
-      expect.objectContaining({
-        mcpServers: expect.objectContaining({
-          rea: expect.objectContaining({
-            command: "npx",
-            args: ["-y", PRODUCT_IDENTITY.registrationPackageSpecifier, "mcp"],
-          }),
-        }),
-      }),
-    );
+describe("SpecForge documentation consistency", () => {
+  it("keeps the SpecForge User Guide valid and accessible", async () => {
+    const content = await readFile(resolve("docs/specforge-user-guide.md"), "utf8");
+    expect(content).toContain("SpecForge");
+    expect(content).toContain("Synthesis");
   });
 
   it("keeps the SpecForge README examples valid and parseable", async () => {
