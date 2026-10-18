@@ -1,34 +1,30 @@
 {
-  "name": "rea-agents",
-  "mcpName": "io.github.morluto/rea",
-  "version": "6.5.0",
-  "description": "Reverse engineer anything from your terminal or agent with one CLI and MCP server.",
+  "name": "specforge",
+  "mcpName": "io.github.neuralithdev/specforge",
+  "version": "5.0.0",
+  "description": "Local-first API client, .har network trace interceptor, and deterministic Claude MCP & TypeScript SDK compiler.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/morluto/rea.git"
+    "url": "git+https://github.com/NeuralithDev/SpecForge.git"
   },
-  "homepage": "https://github.com/morluto/rea#readme",
+  "homepage": "https://github.com/NeuralithDev/SpecForge#readme",
   "bugs": {
-    "url": "https://github.com/morluto/rea/issues"
+    "url": "https://github.com/NeuralithDev/SpecForge/issues"
   },
   "keywords": [
-    "reverse-engineering",
-    "binary-analysis",
-    "agents",
-    "agent-skills",
-    "cli",
-    "mcp-server",
-    "model-context-protocol",
-    "static-analysis",
-    "rea",
-    "decompiler",
+    "specforge",
+    "api-client",
     "mcp",
-    "hopper",
-    "electron",
-    "javascript-analysis",
-    "ghidra",
-    "ida"
+    "model-context-protocol",
+    "har-interceptor",
+    "sdk-compiler",
+    "claude-mcp",
+    "cursor-mcp",
+    "openapi",
+    "offline-first",
+    "typescript-sdk",
+    "vitest"
   ],
   "publishConfig": {
     "access": "public"

@@ -4,7 +4,7 @@
  * Environments, History, and Quota tracking with graceful SSR safety.
  */
 
-import type { PlanId } from "./billing/pricingPlans";
+import type { PlanId } from "./billing/pricingPlans.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
@@ -20,22 +20,22 @@ export type AuthType = "none" | "bearer" | "apiKey" | "basic" | "cookie";
 
 export interface RequestAuthConfig {
   type: AuthType;
-  bearerToken?: string;
-  apiKeyKey?: string;
-  apiKeyValue?: string;
-  apiKeyIn?: "header" | "query";
-  basicUser?: string;
-  basicPass?: string;
-  cookieHeader?: string;
+  bearerToken?: string | undefined;
+  apiKeyKey?: string | undefined;
+  apiKeyValue?: string | undefined;
+  apiKeyIn?: "header" | "query" | undefined;
+  basicUser?: string | undefined;
+  basicPass?: string | undefined;
+  cookieHeader?: string | undefined;
 }
 
 export type BodyType = "none" | "json" | "form-data" | "x-www-form-urlencoded" | "raw";
 
 export interface RequestBodyConfig {
   type: BodyType;
-  rawJson?: string;
-  formData?: KeyValueParam[];
-  urlEncoded?: KeyValueParam[];
+  rawJson?: string | undefined;
+  formData?: KeyValueParam[] | undefined;
+  urlEncoded?: KeyValueParam[] | undefined;
 }
 
 export interface ApiResponseData {
@@ -70,8 +70,8 @@ export interface ExpectedContract {
 
 export interface ApiRequest {
   id: string;
-  collectionId?: string;
-  folder?: string; // e.g. "api.stripe.com/v1/charges"
+  collectionId?: string | undefined;
+  folder?: string | undefined; // e.g. "api.stripe.com/v1/charges"
   name: string;
   method: HttpMethod;
   url: string;
@@ -505,7 +505,7 @@ export const INITIAL_STATE: LocalStudioState = {
 
 /** Load the studio state from browser localStorage. */
 export function loadStudioState(): LocalStudioState {
-  if (typeof window === "undefined") {
+  if (typeof (globalThis as unknown as { window?: unknown }).window === "undefined") {
     return INITIAL_STATE;
   }
   try {
@@ -534,7 +534,7 @@ export function loadStudioState(): LocalStudioState {
 
 /** Save the studio state to browser localStorage with QuotaExceeded resilience. */
 export function saveStudioState(state: LocalStudioState): void {
-  if (typeof window === "undefined") return;
+  if (typeof (globalThis as unknown as { window?: unknown }).window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (err: unknown) {
@@ -594,9 +594,8 @@ export function interpolateVariables(text: string, env: Environment | null | und
 /** Create a fresh request object with default parameters. */
 export function createNewRequest(collectionId?: string, folder?: string): ApiRequest {
   const id = `req_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  return {
+  const req: ApiRequest = {
     id,
-    collectionId,
     folder: folder ?? "Custom Endpoints",
     name: "New Request",
     method: "GET",
@@ -610,6 +609,10 @@ export function createNewRequest(collectionId?: string, folder?: string): ApiReq
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
+  if (collectionId !== undefined) {
+    req.collectionId = collectionId;
+  }
+  return req;
 }
 
 /**

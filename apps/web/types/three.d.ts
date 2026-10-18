@@ -1,6 +1,5 @@
 declare module "three" {
   const content: any;
-  export = content;
   export default content;
   export const Scene: any;
   export const PerspectiveCamera: any;

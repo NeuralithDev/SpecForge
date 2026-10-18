@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { parseCurlCommand, serializeToCurl } from "../../apps/web/lib/curlParser";
-import { analyzeSchemaDrift } from "../../apps/web/lib/schemaDrift";
-import { extractValueFromJsonPath, applyVariableChaining, Environment } from "../../apps/web/lib/localStore";
+import { parseCurlCommand, serializeToCurl } from "../../apps/web/lib/curlParser.js";
+import { analyzeSchemaDrift } from "../../apps/web/lib/schemaDrift.js";
+import { extractValueFromJsonPath, applyVariableChaining, type Environment } from "../../apps/web/lib/localStore.js";
 
 describe("SpecForge Studio v3.0 Advanced Features", () => {
   describe("Feature 2: Smart cURL Parser", () => {
@@ -15,7 +15,7 @@ describe("SpecForge Studio v3.0 Advanced Features", () => {
       expect(parsed).not.toBeNull();
       expect(parsed?.method).toBe("POST");
       expect(parsed?.url).toBe("https://api.stripe.com/v1/charges");
-      expect(parsed?.headers.find((h) => h.key === "Content-Type")?.value).toBe("application/json");
+      expect(parsed?.headers.find((h: { key: string }) => h.key === "Content-Type")?.value).toBe("application/json");
       expect(parsed?.auth.type).toBe("bearer");
       expect(parsed?.auth.bearerToken).toBe("sk_test_123");
       expect(parsed?.body.type).toBe("json");
@@ -76,8 +76,8 @@ describe("SpecForge Studio v3.0 Advanced Features", () => {
 
       expect(result.extracted).toHaveLength(2);
       expect(result.extracted[0]).toEqual({ key: "LAST_CHARGE_ID", value: "ch_3N123456789", path: "data.id" });
-      expect(result.updatedEnv?.variables.find((v) => v.key === "LAST_CHARGE_ID")?.value).toBe("ch_3N123456789");
-      expect(result.updatedEnv?.variables.find((v) => v.key === "CUSTOMER_EMAIL")?.value).toBe("alice@example.com");
+      expect(result.updatedEnv?.variables.find((v: { key: string }) => v.key === "LAST_CHARGE_ID")?.value).toBe("ch_3N123456789");
+      expect(result.updatedEnv?.variables.find((v: { key: string }) => v.key === "CUSTOMER_EMAIL")?.value).toBe("alice@example.com");
     });
   });
 
@@ -108,12 +108,12 @@ describe("SpecForge Studio v3.0 Advanced Features", () => {
       expect(drift.isCompleteMatch).toBe(false);
       expect(drift.items.length).toBeGreaterThan(0);
 
-      const typeMismatch = drift.items.find((d) => d.status === "type_mismatch" && d.path === "amount");
+      const typeMismatch = drift.items.find((d: { status: string; path: string }) => d.status === "type_mismatch" && d.path === "amount");
       expect(typeMismatch).toBeDefined();
       expect(typeMismatch?.expectedType).toBe("number");
       expect(typeMismatch?.actualType).toBe("string");
 
-      const addedField = drift.items.find((d) => d.status === "new_field" && d.path === "metadata.region");
+      const addedField = drift.items.find((d: { status: string; path: string }) => d.status === "new_field" && d.path === "metadata.region");
       expect(addedField).toBeDefined();
     });
   });

@@ -3,8 +3,8 @@
  * Robustly parses -X, --request, -H, --header, -d, --data, --data-raw, -b, --cookie, -u, --user, query params.
  */
 
-import type { ApiRequest, HttpMethod, KeyValueParam, RequestAuthConfig, RequestBodyConfig, Environment } from "./localStore";
-import { interpolateVariables } from "./localStore";
+import type { ApiRequest, HttpMethod, KeyValueParam, RequestAuthConfig, RequestBodyConfig, Environment } from "./localStore.js";
+import { interpolateVariables } from "./localStore.js";
 
 export interface ParsedCurlResult {
   method: HttpMethod;
@@ -114,7 +114,7 @@ export function parseCurlCommand(rawCurl: string): ParsedCurlResult {
       if (next) {
         const [u, p] = next.split(":");
         auth.type = "basic";
-        auth.basicUser = u;
+        auth.basicUser = u ?? "";
         auth.basicPass = p ?? "";
       }
     } else if (!token.startsWith("-") && (!url || url.length === 0)) {
@@ -158,7 +158,7 @@ export function parseCurlCommand(rawCurl: string): ParsedCurlResult {
     auth,
     body: {
       type: formattedJson ? "json" : bodyType,
-      rawJson: formattedJson,
+      rawJson: formattedJson ?? undefined,
     },
   };
 }
@@ -166,12 +166,15 @@ export function parseCurlCommand(rawCurl: string): ParsedCurlResult {
 /**
  * Serializes an ApiRequest into a ready-to-run cURL command string.
  */
-export function serializeToCurl(request: ApiRequest, env?: Environment | null): string {
+export function serializeToCurl(
+  request: Partial<ApiRequest> & Pick<ApiRequest, "method" | "url">,
+  env?: Environment | null
+): string {
   const resolvedUrl = interpolateVariables(request.url, env);
   const parts: string[] = [`curl -X ${request.method} "${resolvedUrl}"`];
 
   // Headers
-  for (const h of request.headers) {
+  for (const h of request.headers ?? []) {
     if (h.enabled && h.key.trim().length > 0) {
       const val = interpolateVariables(h.value, env);
       parts.push(`  -H "${h.key.trim()}: ${val}"`);
@@ -181,7 +184,7 @@ export function serializeToCurl(request: ApiRequest, env?: Environment | null): 
   // Auth Header
   if (request.auth?.type === "bearer" && request.auth.bearerToken) {
     const token = interpolateVariables(request.auth.bearerToken, env);
-    if (!request.headers?.some((h) => h.key.toLowerCase() === "authorization")) {
+    if (!request.headers?.some((h: KeyValueParam) => h.key.toLowerCase() === "authorization")) {
       parts.push(`  -H "Authorization: Bearer ${token}"`);
     }
   } else if (request.auth?.type === "basic" && request.auth.basicUser) {
