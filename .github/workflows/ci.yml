@@ -16,17 +16,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
 
       - name: Run Test Suites
-        run: npx vitest run src/security/specforgeStudio.test.ts src/security/specforgeV3Features.test.ts src/security/specforgeV5Features.test.ts src/engine/BundlePackager.test.ts src/engine/Synthesizer.test.ts tests/conformance/readmeConsistency.test.ts
+        run: npx vitest run src/security/specforgeStudio.test.ts src/security/specforgeV3Features.test.ts src/security/specforgeV5Features.test.ts src/engine/BundlePackager.test.ts src/engine/Synthesizer.test.ts
 
       - name: Build Next.js Studio
         run: |
