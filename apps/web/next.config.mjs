@@ -16,27 +16,6 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@rea": path.resolve(__dirname, "../../src"),
-      "@zip.js/zip.js": path.resolve(
-        __dirname,
-        "node_modules/@zip.js/zip.js/index.js",
-      ),
-      canonicalize: path.resolve(
-        __dirname,
-        "node_modules/canonicalize/lib/canonicalize.js",
-      ),
-      zod: path.resolve(__dirname, "node_modules/zod/index.js"),
-      "@babel/parser": path.resolve(
-        __dirname,
-        "node_modules/@babel/parser/lib/index.js",
-      ),
-      "@babel/types": path.resolve(
-        __dirname,
-        "node_modules/@babel/types/lib/index.js",
-      ),
-      "lossless-json": path.resolve(
-        __dirname,
-        "node_modules/lossless-json/lib/esm/index.js",
-      ),
     };
     config.resolve.modules = [
       path.resolve(__dirname, "node_modules"),
