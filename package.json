@@ -38,7 +38,7 @@
     "rea-agents": "scripts/rea.mjs"
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": ">=20.0.0"
   },
   "packageManager": "npm@11.16.0",
   "files": [
@@ -48,15 +48,10 @@
     "LICENSE"
   ],
   "scripts": {
+    "build": "npm run build:web",
+    "build:web": "cd apps/web && npm install && npm run build",
     "release:notes": "node scripts/release-notes.mjs",
     "deps:check": "node scripts/check-dependency-install.mjs",
-    "metadata:generate": "node scripts/run-exclusive.mjs artifacts node scripts/generate-package-metadata.mjs",
-    "metadata:check": "node scripts/generate-package-metadata.mjs --check",
-    "mcp-registry:check": "node scripts/verify-mcp-registry-metadata.mjs",
-    "mcp-catalog:generate": "node scripts/check-dependency-install.mjs && node scripts/run-exclusive.mjs artifacts turbo run artifacts:mcp-catalog",
-    "mcp-catalog:check": "node scripts/check-dependency-install.mjs && node scripts/run-exclusive.mjs artifacts turbo run mcp-catalog:check:built",
-    "prebuild": "npm run deps:check",
-    "build": "node scripts/run-exclusive.mjs artifacts turbo run artifacts:skills --force",
     "precheck": "npm run deps:check",
     "check": "node scripts/run-exclusive.mjs artifacts turbo run typecheck lint:built format:check knip metadata:check && npm run verify:architecture-guards",
     "precheck:fast": "npm run deps:check",
