@@ -29,6 +29,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "workspaces": [
+    "apps/*"
+  ],
   "type": "module",
   "imports": {
     "#javascript-analysis-worker": "./dist/composition/javascriptAnalysisWorkerProcess.js"

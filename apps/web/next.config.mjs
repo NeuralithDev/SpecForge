@@ -37,6 +37,7 @@ const nextConfig = {
     };
     config.resolve.modules = [
       path.resolve(__dirname, "node_modules"),
+      path.resolve(__dirname, "../../node_modules"),
       "node_modules",
       ...(config.resolve.modules || []),
     ];

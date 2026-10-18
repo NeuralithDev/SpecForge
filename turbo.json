@@ -5,6 +5,9 @@
   "globalDependencies": [".nvmrc", ".npmrc"],
   "globalPassThroughEnv": ["GOMAXPROCS", "GOMEMLIMIT", "UV_THREADPOOL_SIZE"],
   "tasks": {
+    "build": {
+      "outputs": [".next/**", "dist/**"]
+    },
     "compile": {
       "dependsOn": ["metadata:check"],
       "inputs": [
