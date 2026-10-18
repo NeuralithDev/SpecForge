@@ -68,7 +68,7 @@ export default function HeroExperience({
           <span>·</span>
           <span>LOCAL-FIRST ENGINE</span>
           <span>·</span>
-          <span>MIT LICENSE</span>
+          <span>ALL RIGHTS RESERVED</span>
         </div>
       </footer>
     </div>

@@ -7,7 +7,7 @@
 **Turn recorded network traffic into production Claude MCP servers, TypeScript SDKs, and OpenAPI 3.1 specifications in 12 seconds.**
 
 [![Version](https://img.shields.io/badge/version-5.0.0-6366f1.svg?style=flat-square)](https://github.com/NeuralithDev/SpecForge)
-[![License: MIT](https://img.shields.io/badge/license-MIT-emerald.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg?style=flat-square)](#license)
 [![Local-First](https://img.shields.io/badge/engine-100%25_local--first-blue.svg?style=flat-square)](#why-specforge)
 [![Claude & Cursor MCP](https://img.shields.io/badge/MCP-Claude_%26_Cursor_Ready-8b5cf6.svg?style=flat-square)](#claude-desktop--cursor-integration)
 [![TypeScript 5.7](https://img.shields.io/badge/typescript-strict_5.7-3178c6.svg?style=flat-square)](#compiled-artifacts)
@@ -270,7 +270,9 @@ npm run start
 
 ## 📜 License
 
-SpecForge is open source software released under the [MIT License](LICENSE).
+Copyright © 2026 Neuralith. All rights reserved.
+
+SpecForge Studio is proprietary software. Unauthorized copying, reverse engineering, distribution, or commercial modification of this codebase without explicit written authorization from Neuralith is strictly prohibited.
 
 ---
 
