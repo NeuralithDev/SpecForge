@@ -1,7 +1,7 @@
 {
   "name": "specforge",
   "mcpName": "io.github.neuralithdev/specforge",
-  "version": "5.0.0",
+  "version": "6.6.0",
   "description": "Local-first API client, .har network trace interceptor, and deterministic Claude MCP & TypeScript SDK compiler.",
   "license": "UNLICENSED",
   "repository": {
