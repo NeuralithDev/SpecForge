@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileCode, Sparkles, X, ShieldCheck, AlertCircle, Layers } from "lucide-react";
+import {
+  UploadCloud,
+  FileCode,
+  Sparkles,
+  X,
+  ShieldCheck,
+  AlertCircle,
+  Layers,
+} from "lucide-react";
 import { DEMO_HAR_PAYLOAD, DEMO_HAR_FILENAME } from "@/lib/demoHar";
 
 interface HarImportModalProps {
@@ -21,6 +29,8 @@ export default function HarImportModal({
   const [pastedJson, setPastedJson] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [stagedFile, setStagedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -58,18 +68,24 @@ export default function HarImportModal({
 
   const processFile = async (file: File) => {
     setSelectedFileName(file.name);
+    setStagedFile(file);
     if (file.size > 50 * 1024 * 1024) {
       setError(
         `File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 50MB safe ingestion limit. Please record a focused network trace or trim media assets.`,
       );
       return;
     }
+    setIsUploading(true);
     try {
       const text = await file.text();
       await onImportHar(text, file.name);
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to import .har file");
+      setError(
+        err instanceof Error ? err.message : "Failed to import .har file",
+      );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -80,7 +96,9 @@ export default function HarImportModal({
       await onImportHar(pastedJson, "pasted-network-trace.har");
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to parse pasted HAR JSON");
+      setError(
+        err instanceof Error ? err.message : "Failed to parse pasted HAR JSON",
+      );
     }
   };
 
@@ -90,7 +108,9 @@ export default function HarImportModal({
       await onImportHar(DEMO_HAR_PAYLOAD, DEMO_HAR_FILENAME);
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load demo trace");
+      setError(
+        err instanceof Error ? err.message : "Failed to load demo trace",
+      );
     }
   };
 
@@ -105,13 +125,16 @@ export default function HarImportModal({
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-base font-semibold text-slate-100">Import Network Trace (.har)</h2>
+                <h2 className="text-base font-semibold text-slate-100">
+                  Import Network Trace (.har)
+                </h2>
                 <span className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
                   Zero-Leak Scrubbing
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Transform Chrome / DevTools network recordings into organized API collections in 12s
+                Transform Chrome / DevTools network recordings into organized
+                API collections in 12s
               </p>
             </div>
           </div>
@@ -182,18 +205,45 @@ export default function HarImportModal({
               </div>
 
               <h3 className="text-sm font-semibold text-slate-200 mb-1">
-                {isProcessing ? "Processing & Sanitizing Trace..." : "Drag and drop your .har file here"}
+                {isProcessing || isUploading
+                  ? "Processing & Sanitizing Trace..."
+                  : "Drag and drop your .har file here"}
               </h3>
               <p className="text-xs text-slate-400 max-w-sm mb-4">
-                Exported from Chrome, Firefox, Safari, or Proxyman Network tab. Credentials and cookies are stripped automatically.
+                Exported from Chrome, Firefox, Safari, or Proxyman Network tab.
+                Credentials and cookies are stripped automatically.
               </p>
 
-              <button
-                type="button"
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-colors"
-              >
-                Browse .har File
-              </button>
+              {isProcessing || isUploading ? (
+                <div className="flex items-center space-x-2.5 px-5 py-2.5 bg-indigo-950/60 border border-indigo-500/30 rounded-xl text-xs font-semibold text-indigo-300 animate-pulse">
+                  <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                  <span>Scrubbing secrets & clustering endpoints...</span>
+                </div>
+              ) : stagedFile ? (
+                <div className="flex flex-col items-center space-y-3">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (stagedFile) processFile(stagedFile);
+                    }}
+                    className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all flex items-center space-x-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Ingest & Sanitize Trace</span>
+                  </button>
+                  <span className="text-xs text-slate-400 hover:text-slate-200 underline">
+                    or choose a different file
+                  </span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-colors"
+                >
+                  Browse .har File
+                </button>
+              )}
 
               {selectedFileName && (
                 <div className="mt-4 text-xs text-indigo-300 font-mono">
@@ -216,7 +266,9 @@ export default function HarImportModal({
                 disabled={!pastedJson.trim() || isProcessing}
                 className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors"
               >
-                {isProcessing ? "Parsing and Scrubbing..." : "Parse & Cluster Collection"}
+                {isProcessing
+                  ? "Parsing and Scrubbing..."
+                  : "Parse & Cluster Collection"}
               </button>
             </div>
           )}
@@ -225,7 +277,12 @@ export default function HarImportModal({
           <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
             <div className="flex items-center space-x-2 text-xs text-slate-400">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>HarSanitizer active: Tokens become <code className="text-indigo-300">{"{{SPECFORGE_AUTH_...}}"}</code></span>
+              <span>
+                HarSanitizer active: Tokens become{" "}
+                <code className="text-indigo-300">
+                  {"{{SPECFORGE_AUTH_...}}"}
+                </code>
+              </span>
             </div>
             <button
               type="button"

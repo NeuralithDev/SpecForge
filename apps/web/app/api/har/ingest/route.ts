@@ -5,15 +5,34 @@ import { analyzeWorkflowTarget } from "@rea/engine/SpecForgePipeline";
 import { synthesizeArtifacts } from "@rea/engine/Synthesizer";
 import { packageProjectBundle } from "@rea/engine/BundlePackager";
 import { getDb } from "@/lib/supabase";
-import type { HttpMethod, ApiCollection, ApiRequest, Environment, KeyValueParam } from "@/lib/localStore";
+import type {
+  HttpMethod,
+  ApiCollection,
+  ApiRequest,
+  Environment,
+  KeyValueParam,
+} from "@/lib/localStore";
 
 export const dynamic = "force-dynamic";
 
 /** Asset and tracking extensions to filter out from API collections */
 const STATIC_EXTENSIONS = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".avif",
-  ".woff", ".woff2", ".ttf", ".eot", ".otf",
-  ".css", ".map", ".wasm",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".svg",
+  ".ico",
+  ".webp",
+  ".avif",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".otf",
+  ".css",
+  ".map",
+  ".wasm",
 ]);
 
 /** Third-party tracking and telemetry hostnames to ignore */
@@ -64,13 +83,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       rawHar?: string;
+      harContent?: string;
       fileName?: string;
       orgId?: string;
     };
 
-    const rawHar = body.rawHar?.trim();
+    const rawHar = (body.rawHar ?? body.harContent)?.trim();
     if (!rawHar) {
-      return NextResponse.json({ error: "Missing required 'rawHar' payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required 'rawHar' or 'harContent' payload" },
+        { status: 400 },
+      );
     }
 
     const orgId = body.orgId ?? "00000000-0000-0000-0000-000000000000";
@@ -90,7 +113,9 @@ export async function POST(request: NextRequest) {
 
     // 1. Edge/Local Credential & PII Scrubbing via HarSanitizer
     const sanitization = sanitizeHarPayload(rawHar);
-    const targetSha256 = createHash("sha256").update(sanitization.sanitizedHar).digest("hex");
+    const targetSha256 = createHash("sha256")
+      .update(sanitization.sanitizedHar)
+      .digest("hex");
     const targetSha256Prefix = targetSha256.slice(0, 8);
 
     // 2. Parse entries and filter static noise
@@ -98,7 +123,10 @@ export async function POST(request: NextRequest) {
     try {
       harData = JSON.parse(sanitization.sanitizedHar);
     } catch {
-      return NextResponse.json({ error: "Invalid HAR format: unable to parse JSON log" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid HAR format: unable to parse JSON log" },
+        { status: 400 },
+      );
     }
 
     const entries = harData.log?.entries ?? [];
@@ -150,20 +178,27 @@ export async function POST(request: NextRequest) {
 
     if (validEntries.length === 0) {
       return NextResponse.json(
-        { error: "No valid API endpoints discovered in this .har trace after noise filtering." },
+        {
+          error:
+            "No valid API endpoints discovered in this .har trace after noise filtering.",
+        },
         { status: 422 },
       );
     }
 
     // 3. Cluster endpoints into Collection and Requests
     const collectionId = `col_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    const collectionName = fileName.replace(/\.har$/iu, "").replace(/[-_]/gu, " ") || "Imported API Collection";
+    const collectionName =
+      fileName.replace(/\.har$/iu, "").replace(/[-_]/gu, " ") ||
+      "Imported API Collection";
     const discoveredFolders = new Set<string>();
     const requests: ApiRequest[] = [];
     const baseUrls = new Set<string>();
 
     for (const entry of validEntries) {
-      const method = ((entry.request?.method ?? "GET").toUpperCase()) as HttpMethod;
+      const method = (
+        entry.request?.method ?? "GET"
+      ).toUpperCase() as HttpMethod;
       const rawUrl = entry.request?.url ?? "";
       const parsedUrl = new URL(rawUrl);
       const baseUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;
@@ -171,9 +206,10 @@ export async function POST(request: NextRequest) {
 
       // Create folder hierarchy by host and first 2 path segments
       const segments = parsedUrl.pathname.split("/").filter(Boolean);
-      const folderPath = segments.length > 0
-        ? `${parsedUrl.host}/${segments.slice(0, 2).join("/")}`
-        : parsedUrl.host;
+      const folderPath =
+        segments.length > 0
+          ? `${parsedUrl.host}/${segments.slice(0, 2).join("/")}`
+          : parsedUrl.host;
       discoveredFolders.add(folderPath);
 
       // Extract query params
@@ -246,7 +282,10 @@ export async function POST(request: NextRequest) {
           rawJson,
         },
         evidenceId: `ev_${createHash("sha256").update(`${method}:${rawUrl}`).digest("hex").slice(0, 12)}`,
-        sha256Prefix: createHash("sha256").update(rawUrl).digest("hex").slice(0, 8),
+        sha256Prefix: createHash("sha256")
+          .update(rawUrl)
+          .digest("hex")
+          .slice(0, 8),
         expectedContract: {
           sampleResponse: (() => {
             const respText = entry.response?.content?.text;
@@ -260,7 +299,9 @@ export async function POST(request: NextRequest) {
           inferredTypes: {},
           securityAudit: {
             authHeaderName: bearerToken ? "Authorization" : apiKeyHeader,
-            authReplacedWith: bearerToken ? "<REDACTED_BEARER_TOKEN>" : "<REDACTED_API_KEY>",
+            authReplacedWith: bearerToken
+              ? "<REDACTED_BEARER_TOKEN>"
+              : "<REDACTED_API_KEY>",
             ssrfGuarded: true,
             evidenceId: `ev_${createHash("sha256").update(`${method}:${rawUrl}`).digest("hex").slice(0, 12)}`,
           },
@@ -287,7 +328,13 @@ export async function POST(request: NextRequest) {
     const primaryBaseUrl = Array.from(baseUrls)[0] ?? "https://api.example.com";
     const environmentVariables = [
       { id: "var_base", key: "BASE_URL", value: primaryBaseUrl, enabled: true },
-      { id: "var_bearer", key: "SPECFORGE_AUTH_BEARER", value: "sk_sanitized_token_placeholder", enabled: true, isSecret: true },
+      {
+        id: "var_bearer",
+        key: "SPECFORGE_AUTH_BEARER",
+        value: "sk_sanitized_token_placeholder",
+        enabled: true,
+        isSecret: true,
+      },
     ];
 
     for (const dt of sanitization.dynamicTokens) {
@@ -313,7 +360,9 @@ export async function POST(request: NextRequest) {
     const quota = db.getQuota(orgId);
 
     // Check free tier quota (HTTP 402 gate)
-    const isOverQuota = quota.tier === "free" && quota.monthly_endpoints_used + requests.length > quota.monthly_limit;
+    const isOverQuota =
+      quota.tier === "free" &&
+      quota.monthly_endpoints_used + requests.length > quota.monthly_limit;
 
     let synthesisData = null;
     let auditCertificate = "";
@@ -349,10 +398,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const traceMeta = {
+      id: `trace_${Date.now()}_${randomUUID().slice(0, 8)}`,
+      name: fileName,
+      sha256: targetSha256,
+      sha256Prefix: targetSha256Prefix,
+      endpointCount: requests.length,
+      redactionCount: sanitization.redactionCount,
+      timestamp: new Date().toISOString(),
+    };
+
     return NextResponse.json({
       collection,
       requests,
       environment,
+      traceMeta,
       redactionCount: sanitization.redactionCount,
       redactions: sanitization.redactions,
       filteredAssetsCount: filteredCount,

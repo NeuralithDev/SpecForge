@@ -43,17 +43,29 @@ import type { PlanId } from "../lib/billing/pricingPlans";
 
 export default function SpecForgeStudioPage() {
   const [isClientLoaded, setIsClientLoaded] = useState(false);
-  const [collections, setCollections] = useState<ApiCollection[]>(INITIAL_STATE.collections);
-  const [requests, setRequests] = useState<ApiRequest[]>(INITIAL_STATE.requests);
-  const [environments, setEnvironments] = useState<Environment[]>(INITIAL_STATE.environments);
+  const [collections, setCollections] = useState<ApiCollection[]>(
+    INITIAL_STATE.collections,
+  );
+  const [requests, setRequests] = useState<ApiRequest[]>(
+    INITIAL_STATE.requests,
+  );
+  const [environments, setEnvironments] = useState<Environment[]>(
+    INITIAL_STATE.environments,
+  );
   const [activeEnvironmentId, setActiveEnvironmentId] = useState<string | null>(
     INITIAL_STATE.activeEnvironmentId,
   );
-  const [history, setHistory] = useState<RequestHistoryItem[]>(INITIAL_STATE.history);
+  const [history, setHistory] = useState<RequestHistoryItem[]>(
+    INITIAL_STATE.history,
+  );
   const [traces, setTraces] = useState<HarTraceMeta[]>(INITIAL_STATE.traces);
   const [quota, setQuota] = useState(INITIAL_STATE.quota);
-  const [activeTabIds, setActiveTabIds] = useState<string[]>(INITIAL_STATE.activeTabIds);
-  const [activeTabId, setActiveTabId] = useState<string | null>(INITIAL_STATE.activeTabId);
+  const [activeTabIds, setActiveTabIds] = useState<string[]>(
+    INITIAL_STATE.activeTabIds,
+  );
+  const [activeTabId, setActiveTabId] = useState<string | null>(
+    INITIAL_STATE.activeTabId,
+  );
 
   // View & Mode State (Hero vs Studio IDE)
   const [currentView, setCurrentView] = useState<"hero" | "studio">("hero");
@@ -61,8 +73,11 @@ export default function SpecForgeStudioPage() {
   const [sendMode, setSendMode] = useState<"live" | "mock">("live");
 
   // Runtime Execution State
-  const [lastResponse, setLastResponse] = useState<ApiResponseData | null>(null);
-  const [compiledArtifacts, setCompiledArtifacts] = useState<CompilerArtifacts | null>(null);
+  const [lastResponse, setLastResponse] = useState<ApiResponseData | null>(
+    null,
+  );
+  const [compiledArtifacts, setCompiledArtifacts] =
+    useState<CompilerArtifacts | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [isExportingZip, setIsExportingZip] = useState(false);
@@ -80,9 +95,13 @@ export default function SpecForgeStudioPage() {
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const [curlModalOpen, setCurlModalOpen] = useState(false);
   const [runnerModalOpen, setRunnerModalOpen] = useState(false);
-  const [runnerCollectionId, setRunnerCollectionId] = useState<string | null>(null);
+  const [runnerCollectionId, setRunnerCollectionId] = useState<string | null>(
+    null,
+  );
   const [waterfallModalOpen, setWaterfallModalOpen] = useState(false);
-  const [inspectingTrace, setInspectingTrace] = useState<HarTraceMeta | null>(null);
+  const [inspectingTrace, setInspectingTrace] = useState<HarTraceMeta | null>(
+    null,
+  );
 
   // Load state from LocalStorage and sync URL hash/query on mount
   useEffect(() => {
@@ -105,10 +124,18 @@ export default function SpecForgeStudioPage() {
       if (hash === "#mcp" || params.get("mode") === "mcp") {
         setCurrentView("studio");
         setWorkspaceMode("mcp");
-      } else if (hash === "#trace" || hash === "#har" || params.get("mode") === "trace") {
+      } else if (
+        hash === "#trace" ||
+        hash === "#har" ||
+        params.get("mode") === "trace"
+      ) {
         setCurrentView("studio");
         setWorkspaceMode("trace");
-      } else if (hash === "#studio" || hash === "#builder" || params.get("view") === "studio") {
+      } else if (
+        hash === "#studio" ||
+        hash === "#builder" ||
+        params.get("view") === "studio"
+      ) {
         setCurrentView("studio");
         setWorkspaceMode("builder");
       } else if (hash === "#hero" || params.get("view") === "hero") {
@@ -150,9 +177,15 @@ export default function SpecForgeStudioPage() {
 
   // Active Environment & Request references
   const activeEnvironment =
-    environments.find((e) => e.id === activeEnvironmentId) || environments[0] || null;
-  const activeRequest = requests.find((r) => r.id === activeTabId) || requests[0] || null;
-  const activeCollection = collections.find((c) => c.id === activeRequest?.collectionId) || collections[0] || null;
+    environments.find((e) => e.id === activeEnvironmentId) ||
+    environments[0] ||
+    null;
+  const activeRequest =
+    requests.find((r) => r.id === activeTabId) || requests[0] || null;
+  const activeCollection =
+    collections.find((c) => c.id === activeRequest?.collectionId) ||
+    collections[0] ||
+    null;
 
   // Global Keyboard Shortcuts (Cmd+K for Command Palette, Cmd+I for HAR Import)
   useEffect(() => {
@@ -233,19 +266,17 @@ export default function SpecForgeStudioPage() {
     if (!activeRequest) return;
     setIsSending(true);
     setTimeout(() => {
-      const mockSample =
-        activeRequest.expectedContract?.sampleResponse ||
-        {
-          id: `ev_${activeRequest.sha256Prefix || "8f4a1c91"}`,
-          object: "simulated_evidence",
-          endpoint: activeRequest.name,
-          method: activeRequest.method,
-          url: activeRequest.url,
-          status: "succeeded",
-          paid: true,
-          evidenceProvenance: "SHA-256 Verified Recorded .har Trace",
-          timestamp: new Date().toISOString(),
-        };
+      const mockSample = activeRequest.expectedContract?.sampleResponse || {
+        id: `ev_${activeRequest.sha256Prefix || "8f4a1c91"}`,
+        object: "simulated_evidence",
+        endpoint: activeRequest.name,
+        method: activeRequest.method,
+        url: activeRequest.url,
+        status: "succeeded",
+        paid: true,
+        evidenceProvenance: "SHA-256 Verified Recorded .har Trace",
+        timestamp: new Date().toISOString(),
+      };
 
       const mockResData: ApiResponseData = {
         status: 200,
@@ -279,7 +310,11 @@ export default function SpecForgeStudioPage() {
       setHistory((prev) => [historyItem, ...prev.slice(0, 49)]);
 
       // Variable Chaining Execution
-      if (mockResData.json && activeRequest.chainRules && activeRequest.chainRules.length > 0) {
+      if (
+        mockResData.json &&
+        activeRequest.chainRules &&
+        activeRequest.chainRules.length > 0
+      ) {
         const chainResult = applyVariableChaining(
           mockResData.json,
           activeRequest.chainRules,
@@ -287,10 +322,15 @@ export default function SpecForgeStudioPage() {
         );
         if (chainResult.updatedEnv && chainResult.extracted.length > 0) {
           setEnvironments((prev) =>
-            prev.map((e) => (e.id === chainResult.updatedEnv!.id ? chainResult.updatedEnv! : e)),
+            prev.map((e) =>
+              e.id === chainResult.updatedEnv!.id ? chainResult.updatedEnv! : e,
+            ),
           );
           const toastText = chainResult.extracted
-            .map((item) => `Extracted {{${item.key}}} = ${item.value.slice(0, 16)}...`)
+            .map(
+              (item) =>
+                `Extracted {{${item.key}}} = ${item.value.slice(0, 16)}...`,
+            )
             .join(" | ");
           showToast(toastText);
         }
@@ -323,13 +363,20 @@ export default function SpecForgeStudioPage() {
     setErrorMessage(null);
 
     try {
-      let targetUrl = interpolateVariables(activeRequest.url, activeEnvironment);
+      let targetUrl = interpolateVariables(
+        activeRequest.url,
+        activeEnvironment,
+      );
 
       // Append Query Parameters
-      const enabledParams = activeRequest.params.filter((p) => p.enabled && p.key.trim().length > 0);
+      const enabledParams = activeRequest.params.filter(
+        (p) => p.enabled && p.key.trim().length > 0,
+      );
       if (enabledParams.length > 0) {
         try {
-          const urlObj = new URL(targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`);
+          const urlObj = new URL(
+            targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`,
+          );
           for (const param of enabledParams) {
             urlObj.searchParams.append(
               interpolateVariables(param.key, activeEnvironment),
@@ -346,31 +393,49 @@ export default function SpecForgeStudioPage() {
       const requestHeaders: Record<string, string> = {};
       for (const h of activeRequest.headers) {
         if (h.enabled && h.key.trim().length > 0) {
-          requestHeaders[interpolateVariables(h.key, activeEnvironment)] = interpolateVariables(
-            h.value,
-            activeEnvironment,
-          );
+          requestHeaders[interpolateVariables(h.key, activeEnvironment)] =
+            interpolateVariables(h.value, activeEnvironment);
         }
       }
 
       // Prepare Auth Headers
-      if (activeRequest.auth.type === "bearer" && activeRequest.auth.bearerToken) {
-        requestHeaders["Authorization"] = `Bearer ${interpolateVariables(activeRequest.auth.bearerToken, activeEnvironment)}`;
+      if (
+        activeRequest.auth.type === "bearer" &&
+        activeRequest.auth.bearerToken
+      ) {
+        requestHeaders["Authorization"] =
+          `Bearer ${interpolateVariables(activeRequest.auth.bearerToken, activeEnvironment)}`;
       } else if (
         activeRequest.auth.type === "apiKey" &&
         activeRequest.auth.apiKeyKey &&
         activeRequest.auth.apiKeyValue
       ) {
-        if (activeRequest.auth.apiKeyIn === "header" || !activeRequest.auth.apiKeyIn) {
-          requestHeaders[interpolateVariables(activeRequest.auth.apiKeyKey, activeEnvironment)] =
-            interpolateVariables(activeRequest.auth.apiKeyValue, activeEnvironment);
+        if (
+          activeRequest.auth.apiKeyIn === "header" ||
+          !activeRequest.auth.apiKeyIn
+        ) {
+          requestHeaders[
+            interpolateVariables(
+              activeRequest.auth.apiKeyKey,
+              activeEnvironment,
+            )
+          ] = interpolateVariables(
+            activeRequest.auth.apiKeyValue,
+            activeEnvironment,
+          );
         }
       } else if (
         activeRequest.auth.type === "basic" &&
         (activeRequest.auth.basicUser || activeRequest.auth.basicPass)
       ) {
-        const u = interpolateVariables(activeRequest.auth.basicUser || "", activeEnvironment);
-        const p = interpolateVariables(activeRequest.auth.basicPass || "", activeEnvironment);
+        const u = interpolateVariables(
+          activeRequest.auth.basicUser || "",
+          activeEnvironment,
+        );
+        const p = interpolateVariables(
+          activeRequest.auth.basicPass || "",
+          activeEnvironment,
+        );
         const b64 = typeof window !== "undefined" ? btoa(`${u}:${p}`) : "";
         requestHeaders["Authorization"] = `Basic ${b64}`;
       }
@@ -379,8 +444,14 @@ export default function SpecForgeStudioPage() {
       let requestBody: string | undefined = undefined;
       if (["POST", "PUT", "PATCH"].includes(activeRequest.method)) {
         if (activeRequest.body.type === "raw" && activeRequest.body.rawJson) {
-          requestBody = interpolateVariables(activeRequest.body.rawJson, activeEnvironment);
-          if (!requestHeaders["Content-Type"] && !requestHeaders["content-type"]) {
+          requestBody = interpolateVariables(
+            activeRequest.body.rawJson,
+            activeEnvironment,
+          );
+          if (
+            !requestHeaders["Content-Type"] &&
+            !requestHeaders["content-type"]
+          ) {
             requestHeaders["Content-Type"] = "application/json";
           }
         }
@@ -423,7 +494,11 @@ export default function SpecForgeStudioPage() {
       setHistory((prev) => [historyItem, ...prev.slice(0, 49)]);
 
       // Variable Chaining Execution
-      if (resData.json && activeRequest.chainRules && activeRequest.chainRules.length > 0) {
+      if (
+        resData.json &&
+        activeRequest.chainRules &&
+        activeRequest.chainRules.length > 0
+      ) {
         const chainResult = applyVariableChaining(
           resData.json,
           activeRequest.chainRules,
@@ -431,10 +506,15 @@ export default function SpecForgeStudioPage() {
         );
         if (chainResult.updatedEnv && chainResult.extracted.length > 0) {
           setEnvironments((prev) =>
-            prev.map((e) => (e.id === chainResult.updatedEnv!.id ? chainResult.updatedEnv! : e)),
+            prev.map((e) =>
+              e.id === chainResult.updatedEnv!.id ? chainResult.updatedEnv! : e,
+            ),
           );
           const toastText = chainResult.extracted
-            .map((item) => `Extracted {{${item.key}}} = ${item.value.slice(0, 16)}...`)
+            .map(
+              (item) =>
+                `Extracted {{${item.key}}} = ${item.value.slice(0, 16)}...`,
+            )
             .join(" | ");
           showToast(toastText);
         }
@@ -458,6 +538,7 @@ export default function SpecForgeStudioPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          rawHar,
           harContent: rawHar,
           fileName,
         }),
@@ -471,14 +552,27 @@ export default function SpecForgeStudioPage() {
       const data = (await res.json()) as {
         collection: ApiCollection;
         requests: ApiRequest[];
-        traceMeta: HarTraceMeta;
+        traceMeta?: HarTraceMeta;
+        targetSha256?: string;
+        targetSha256Prefix?: string;
+        redactionCount?: number;
       };
 
       setCollections((prev) => [data.collection, ...prev]);
       setRequests((prev) => [...data.requests, ...prev]);
-      setTraces((prev) => [data.traceMeta, ...prev]);
 
-      if (data.requests.length > 0) {
+      const trace: HarTraceMeta = data.traceMeta ?? {
+        id: `trace_${Date.now()}`,
+        name: fileName,
+        sha256: data.targetSha256 || "unknown",
+        sha256Prefix: data.targetSha256Prefix || "unknown",
+        endpointCount: data.requests?.length || 0,
+        redactionCount: data.redactionCount || 0,
+        timestamp: new Date().toISOString(),
+      };
+      setTraces((prev) => [trace, ...prev]);
+
+      if (data.requests && data.requests.length > 0) {
         const newIds = data.requests.map((r) => r.id);
         setActiveTabIds((prev) => Array.from(new Set([...newIds, ...prev])));
         setActiveTabId(data.requests[0]?.id ?? null);
@@ -487,7 +581,9 @@ export default function SpecForgeStudioPage() {
       setHarModalOpen(false);
       showToast(`Ingested ${data.requests.length} endpoints from ${fileName}`);
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to import .har");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to import .har",
+      );
     } finally {
       setIsProcessingHar(false);
     }
@@ -548,7 +644,9 @@ export default function SpecForgeStudioPage() {
 
       showToast("Loaded authentic Stripe Checkout .har trace");
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to load demo trace");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to load demo trace",
+      );
     } finally {
       setIsProcessingHar(false);
     }
@@ -566,8 +664,8 @@ export default function SpecForgeStudioPage() {
       const targetReqs = colId
         ? requests.filter((r) => r.collectionId === colId)
         : activeRequest
-        ? [activeRequest]
-        : [];
+          ? [activeRequest]
+          : [];
 
       if (targetReqs.length === 0) {
         throw new Error("No endpoints selected to compile.");
@@ -585,7 +683,9 @@ export default function SpecForgeStudioPage() {
       if (response.status === 402) {
         setPricingModalOpen(true);
         const errData = (await response.json()) as { error?: string };
-        throw new Error(errData.error ?? "Monthly endpoint quota limit reached.");
+        throw new Error(
+          errData.error ?? "Monthly endpoint quota limit reached.",
+        );
       }
 
       if (!response.ok) {
@@ -607,16 +707,21 @@ export default function SpecForgeStudioPage() {
       if (data.quotaUsage) {
         setQuota((prev) => ({
           ...prev,
-          compiledEndpointsCount: data.quotaUsage?.currentUsage ?? prev.compiledEndpointsCount,
+          compiledEndpointsCount:
+            data.quotaUsage?.currentUsage ?? prev.compiledEndpointsCount,
           limit: data.quotaUsage?.limit ?? prev.limit,
           tier: data.quotaUsage?.tier ?? prev.tier,
           planId: data.quotaUsage?.planId ?? prev.planId,
         }));
       }
 
-      showToast("Compiled Claude MCP Server, TypeScript SDK & OpenAPI 3.1 Spec in 12s");
+      showToast(
+        "Compiled Claude MCP Server, TypeScript SDK & OpenAPI 3.1 Spec in 12s",
+      );
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Compilation failed");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Compilation failed",
+      );
     } finally {
       setIsCompiling(false);
     }
@@ -632,7 +737,8 @@ export default function SpecForgeStudioPage() {
         "src/client.ts": artifacts?.clientCode || "// TypeScript SDK",
         "openapi.json": artifacts?.openApiJson || "{}",
         "tests/parity.test.ts": artifacts?.parityTestsCode || "// Vitest Suite",
-        "EPISTEMIC_AUDIT_CERTIFICATE.md": artifacts?.auditCertificate || "# Epistemic Audit Certificate",
+        "EPISTEMIC_AUDIT_CERTIFICATE.md":
+          artifacts?.auditCertificate || "# Epistemic Audit Certificate",
         "package.json": JSON.stringify(
           {
             name: "@specforge/synthesized-sdk",
@@ -689,9 +795,15 @@ export default function SpecForgeStudioPage() {
   // ---------------------------------------------------------------------------
   // Feature 2: Smart cURL Importer handler
   // ---------------------------------------------------------------------------
-  const handleImportParsedCurl = (parsed: ParsedCurlResult, openInNewTab: boolean) => {
+  const handleImportParsedCurl = (
+    parsed: ParsedCurlResult,
+    openInNewTab: boolean,
+  ) => {
     if (openInNewTab || !activeRequest) {
-      const newReq = createNewRequest(activeRequest?.collectionId, activeRequest?.folder);
+      const newReq = createNewRequest(
+        activeRequest?.collectionId,
+        activeRequest?.folder,
+      );
       newReq.method = parsed.method;
       newReq.url = parsed.url;
       newReq.params = parsed.params;
@@ -709,7 +821,8 @@ export default function SpecForgeStudioPage() {
         method: parsed.method,
         url: parsed.url,
         params: parsed.params.length > 0 ? parsed.params : activeRequest.params,
-        headers: parsed.headers.length > 0 ? parsed.headers : activeRequest.headers,
+        headers:
+          parsed.headers.length > 0 ? parsed.headers : activeRequest.headers,
         auth: parsed.auth.type !== "none" ? parsed.auth : activeRequest.auth,
         body: parsed.body.type !== "none" ? parsed.body : activeRequest.body,
         updatedAt: new Date().toISOString(),
@@ -850,15 +963,21 @@ export default function SpecForgeStudioPage() {
                   isCompiling={isCompiling}
                   isSplitVertical={isSplitVertical}
                   sendMode={sendMode}
-                  onToggleSendMode={() => setSendMode((prev) => (prev === "live" ? "mock" : "live"))}
-                  onToggleSplitLayout={() => setIsSplitVertical(!isSplitVertical)}
+                  onToggleSendMode={() =>
+                    setSendMode((prev) => (prev === "live" ? "mock" : "live"))
+                  }
+                  onToggleSplitLayout={() =>
+                    setIsSplitVertical(!isSplitVertical)
+                  }
                   onSelectTab={handleSelectTab}
                   onCloseTab={handleCloseTab}
                   onNewTab={() => handleNewTab()}
                   onUpdateRequest={handleUpdateRequest}
                   onSendRequest={handleSendRequest}
                   onCompileRequest={() => handleCompileRequest()}
-                  onCopyCurlToast={() => showToast("cURL command copied to clipboard")}
+                  onCopyCurlToast={() =>
+                    showToast("cURL command copied to clipboard")
+                  }
                 />
 
                 {/* 50/50 Split: Request Pane vs Response Pane */}
@@ -893,7 +1012,10 @@ export default function SpecForgeStudioPage() {
                       };
                       handleUpdateRequest({
                         ...activeRequest,
-                        chainRules: [...(activeRequest.chainRules || []), newRule],
+                        chainRules: [
+                          ...(activeRequest.chainRules || []),
+                          newRule,
+                        ],
                       });
                       showToast(`Added extraction rule for "${path}"`);
                     }}
@@ -928,7 +1050,10 @@ export default function SpecForgeStudioPage() {
               onImportHarFile={handleImportHarFile}
               isProcessingHar={isProcessingHar}
               onOpenInRequestBuilder={(entry) => {
-                const newReq = createNewRequest(activeRequest?.collectionId, entry.domain);
+                const newReq = createNewRequest(
+                  activeRequest?.collectionId,
+                  entry.domain,
+                );
                 newReq.method = entry.method;
                 newReq.url = entry.url;
                 newReq.name = `${entry.method} ${entry.path}`;
@@ -936,7 +1061,9 @@ export default function SpecForgeStudioPage() {
                 setActiveTabIds((prev) => [...prev, newReq.id]);
                 setActiveTabId(newReq.id);
                 setWorkspaceMode("builder");
-                showToast(`Opened ${entry.method} ${entry.path} in Request Builder`);
+                showToast(
+                  `Opened ${entry.method} ${entry.path} in Request Builder`,
+                );
               }}
             />
           )}
@@ -969,7 +1096,11 @@ export default function SpecForgeStudioPage() {
       <CollectionRunnerModal
         isOpen={runnerModalOpen}
         onClose={() => setRunnerModalOpen(false)}
-        collection={collections.find((c) => c.id === runnerCollectionId) || collections[0] || null}
+        collection={
+          collections.find((c) => c.id === runnerCollectionId) ||
+          collections[0] ||
+          null
+        }
         requests={requests}
         activeEnvironment={activeEnvironment}
       />
@@ -979,7 +1110,10 @@ export default function SpecForgeStudioPage() {
         onClose={() => setWaterfallModalOpen(false)}
         trace={inspectingTrace || traces[0] || null}
         onConvertToRequest={(entry) => {
-          const newReq = createNewRequest(activeRequest?.collectionId, entry.domain);
+          const newReq = createNewRequest(
+            activeRequest?.collectionId,
+            entry.domain,
+          );
           newReq.method = entry.method;
           newReq.url = entry.url;
           newReq.name = `${entry.method} ${entry.path}`;
