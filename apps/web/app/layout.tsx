@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: "SpecForge Studio | Local-First API Client, .har Interceptor & MCP Compiler",
+  title:
+    "SpecForge Studio | Local-First API Client, .har Interceptor & MCP Compiler",
   description:
     "The local-first API client & MCP compiler for the AI era. Test HTTP requests offline, drag-and-drop .har traces, and compile into Claude MCP servers, TypeScript SDKs, OpenAPI 3.1 specs, and Vitest suites in 12s.",
   keywords: [
@@ -38,6 +40,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-[#0B0C0E] text-zinc-100 selection:bg-zinc-800 selection:text-white min-h-screen">
         {children}
+        <Analytics />
       </body>
     </html>
   );

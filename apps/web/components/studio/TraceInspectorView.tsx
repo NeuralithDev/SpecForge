@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { HarTraceMeta, HarTraceEntry, HttpMethod } from "@/lib/localStore";
 import { METHOD_COLORS } from "./Sidebar";
+import RedactionRulesDrawer from "./RedactionRulesDrawer";
 
 interface TraceInspectorViewProps {
   traces: HarTraceMeta[];
@@ -23,6 +24,7 @@ interface TraceInspectorViewProps {
   onImportHarFile: (file: File) => void;
   isProcessingHar: boolean;
   onOpenInRequestBuilder: (entry: HarTraceEntry) => void;
+  onGenerateSchemas?: () => void;
 }
 
 export default function TraceInspectorView({
@@ -31,15 +33,18 @@ export default function TraceInspectorView({
   onImportHarFile,
   isProcessingHar,
   onOpenInRequestBuilder,
+  onGenerateSchemas,
 }: TraceInspectorViewProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isRulesDrawerOpen, setIsRulesDrawerOpen] = useState(false);
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(
     traces[0]?.id || null,
   );
   const [searchFilter, setSearchFilter] = useState("");
 
-  const activeTrace = traces.find((t) => t.id === selectedTraceId) || traces[0] || null;
+  const activeTrace =
+    traces.find((t) => t.id === selectedTraceId) || traces[0] || null;
 
   // Fallback demo entries if trace has no explicit entries array
   const defaultEntries: HarTraceEntry[] = [
@@ -117,7 +122,10 @@ export default function TraceInspectorView({
     },
   ];
 
-  const entries = activeTrace?.entries && activeTrace.entries.length > 0 ? activeTrace.entries : defaultEntries;
+  const entries =
+    activeTrace?.entries && activeTrace.entries.length > 0
+      ? activeTrace.entries
+      : defaultEntries;
 
   const filteredEntries = entries.filter((e) => {
     if (!searchFilter.trim()) return true;
@@ -194,7 +202,8 @@ export default function TraceInspectorView({
             </div>
             <div>
               <div className="text-zinc-200 font-medium text-xs">
-                Drag &amp; drop a Chrome <code className="font-mono text-zinc-300">.har</code> trace here
+                Drag &amp; drop a Chrome{" "}
+                <code className="font-mono text-zinc-300">.har</code> trace here
               </div>
               <div className="text-zinc-500 text-[11px]">
                 Scrubbed locally at 0.4ms before any compilation
@@ -214,9 +223,15 @@ export default function TraceInspectorView({
           className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#16161A] hover:bg-[#1C1C21] border border-[#232329] text-zinc-200 font-medium transition-colors flex items-center justify-center space-x-2 shrink-0 cursor-pointer shadow-sm text-xs"
         >
           {isProcessingHar ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" strokeWidth={1.75} />
+            <RefreshCw
+              className="w-3.5 h-3.5 animate-spin"
+              strokeWidth={1.75}
+            />
           ) : (
-            <FileCode className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.75} />
+            <FileCode
+              className="w-3.5 h-3.5 text-zinc-400"
+              strokeWidth={1.75}
+            />
           )}
           <span>Load Sample Stripe Trace</span>
         </button>
@@ -247,23 +262,49 @@ export default function TraceInspectorView({
               <span className="text-zinc-600">|</span>
               <span>SHA-256: {activeTrace.sha256Prefix}...</span>
               <span className="text-zinc-600">|</span>
-              <span className="text-emerald-400 flex items-center space-x-1">
+              <button
+                type="button"
+                onClick={() => setIsRulesDrawerOpen(true)}
+                className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer transition-colors hover:underline"
+                title="View active redaction rules and pre-compile diff"
+              >
                 <ShieldCheck className="w-3 h-3" strokeWidth={1.75} />
                 <span>{activeTrace.redactionCount} secrets scrubbed</span>
-              </span>
+              </button>
             </div>
           )}
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" strokeWidth={1.75} />
-          <input
-            type="text"
-            placeholder="Filter requests..."
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-[#16161A] border border-[#232329] rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-xs"
-          />
+        <div className="flex items-center space-x-2.5 w-full sm:w-auto">
+          <button
+            type="button"
+            id="btn-redaction-rules-active"
+            onClick={() => setIsRulesDrawerOpen(true)}
+            className="px-2.5 py-1.5 rounded-lg bg-[#16161A] hover:bg-[#1E1E24] border border-[#232329] hover:border-zinc-500 text-zinc-300 hover:text-zinc-100 font-medium text-xs flex items-center space-x-1.5 transition-colors cursor-pointer shrink-0"
+          >
+            <ShieldCheck
+              className="w-3.5 h-3.5 text-emerald-400"
+              strokeWidth={1.75}
+            />
+            <span>Redaction Rules (Active)</span>
+            <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono">
+              Diff Preview
+            </span>
+          </button>
+
+          <div className="relative w-full sm:w-64">
+            <Search
+              className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500"
+              strokeWidth={1.75}
+            />
+            <input
+              type="text"
+              placeholder="Filter requests..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-[#16161A] border border-[#232329] rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-xs"
+            />
+          </div>
         </div>
       </div>
 
@@ -283,7 +324,8 @@ export default function TraceInspectorView({
           </thead>
           <tbody className="divide-y divide-[#232329] text-zinc-300">
             {filteredEntries.map((entry) => {
-              const methodStyle = METHOD_COLORS[entry.method] || METHOD_COLORS.GET;
+              const methodStyle =
+                METHOD_COLORS[entry.method] || METHOD_COLORS.GET;
               const is2xx = entry.status >= 200 && entry.status < 300;
 
               return (
@@ -349,6 +391,12 @@ export default function TraceInspectorView({
           </tbody>
         </table>
       </div>
+      <RedactionRulesDrawer
+        isOpen={isRulesDrawerOpen}
+        onClose={() => setIsRulesDrawerOpen(false)}
+        activeTrace={activeTrace}
+        onGenerateSchemas={onGenerateSchemas}
+      />
     </motion.div>
   );
 }

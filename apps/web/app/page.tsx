@@ -1065,6 +1065,10 @@ export default function SpecForgeStudioPage() {
                   `Opened ${entry.method} ${entry.path} in Request Builder`,
                 );
               }}
+              onGenerateSchemas={async () => {
+                await handleCompileRequest();
+                setWorkspaceMode("mcp");
+              }}
             />
           )}
         </AnimatePresence>
